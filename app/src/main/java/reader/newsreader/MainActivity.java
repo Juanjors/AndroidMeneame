@@ -8,6 +8,15 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
+
+import html.WebPageUtils;
+import model.dao.NewsDAO;
+import model.dto.New;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -18,14 +27,33 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+      /**  FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }
-        });
+        }); */
+
+        WebPageUtils webUtils = new WebPageUtils();
+
+        String html = null;
+        try {
+            html = (String) webUtils.execute("https://www.meneame.net/").get();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        NewsDAO newServices = new NewsDAO(html);
+        ArrayList<New> noticias = newServices.getNewsList();
+
+        TextView textView = (TextView) findViewById(R.id.newsView);
+
+        for (New noticia : noticias) {
+            textView.append(noticia.getTitle());
+        }
+
+        Toast.makeText(getApplicationContext(), noticias.get(0).getTitle(), Toast.LENGTH_SHORT).show();
     }
 
     @Override
