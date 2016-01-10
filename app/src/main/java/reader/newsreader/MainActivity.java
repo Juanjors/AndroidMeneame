@@ -1,22 +1,49 @@
 package reader.newsreader;
 
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.concurrent.ExecutionException;
 
-import html.WebPageUtils;
+import adapters.NewsAdapter;
+import controllers.NewsController;
+import model.constants.FilesName;
+import model.utils.ConnectionUtils;
+import model.utils.FileSerializationUtils;
+import model.utils.WebPageUtils;
 import model.dao.NewsDAO;
 import model.dto.New;
+
+/**
+ * Autor = Juan José Ramírez Sánchez
+ * Fecha = 10/01/2016.
+ * Licencia = gpl3.0
+ * Version = 1.0
+ * Descripcion = Script para controlar algunas de las animaciones y algunos de los efectos que aparecen
+ * en la animación principal.
+ * <p/>
+ * Copyright (C) 2016 Juan José Ramírez Sánchez
+ * <p/>
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p/>
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ * <p/>
+ * You should have received a copy of the GNU General Public License along with
+ * this program. If not, see <http://www.gnu.org/licenses/>.
+ **/
 
 public class MainActivity extends AppCompatActivity {
 
@@ -27,33 +54,16 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-      /**  FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        }); */
-
-        WebPageUtils webUtils = new WebPageUtils();
-
-        String html = null;
-        try {
-            html = (String) webUtils.execute("https://www.meneame.net/").get();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        NewsDAO newServices = new NewsDAO(html);
-        ArrayList<New> noticias = newServices.getNewsList();
-
-        TextView textView = (TextView) findViewById(R.id.newsView);
-
-        for (New noticia : noticias) {
-            textView.append(noticia.getTitle());
+        if (ConnectionUtils.hasActiveInternetConnection(this)) {
+            NewsController newsController = new NewsController();
+            ArrayList<New> noticias = newsController.getCurrentNews();
+            Toast.makeText(getApplicationContext(), R.string.welcome_msg, Toast.LENGTH_LONG).show();
+            NewsAdapter newsAdapter = new NewsAdapter(this, noticias);
+            ListView listaDisplayNoticias = (ListView) findViewById(R.id.listaNoticias);
+            listaDisplayNoticias.setAdapter(newsAdapter);
         }
 
-        Toast.makeText(getApplicationContext(), noticias.get(0).getTitle(), Toast.LENGTH_SHORT).show();
+
     }
 
     @Override
@@ -77,4 +87,5 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
 }
